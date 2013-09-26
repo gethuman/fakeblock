@@ -1,0 +1,35 @@
+{
+  "name": "fakeblock",
+  "version": "0.0.1",
+  "description": "Field-level ACL library for Node.js and NoSql document stores",
+  "main": "lib/fakeblock.js",
+  "dependencies": {
+    "underscore": "~1.5.2"
+  },
+  "devDependencies": {
+    "mocha": "~1.13.0",
+    "blanket": "~1.1.5",
+    "chai": "~1.6.1",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-contrib-watch": "~0.2.0",
+    "grunt-mocha-test": "~0.5.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gethuman/fakeblock.js.git"
+  },
+  "keywords": [
+    "ACL",
+    "Security",
+    "Node.js",
+    "MongoDB"
+  ],
+  "author": "Jeff Whelpley",
+  "bugs": {
+    "url": "https://github.com/gethuman/fakeblock.js/issues"
+  }
+}
