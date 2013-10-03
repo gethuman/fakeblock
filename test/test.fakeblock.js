@@ -7,6 +7,7 @@
  */
 var chai        = require('chai');
 var should      = chai.should();
+var expect      = chai.expect;
 var Fakeblock   = require('../lib/fakeblock');
 var testConfig = {
     create: {
@@ -196,13 +197,12 @@ describe('UNIT fakeblock/lib/fakeblock', function() {
                     duh: 'blasdf'
                 }
             };
-            var expectedValue= {
-                name: { '$in': ['val'] },
-                tags: 'blah'
+
+            var func = function () {
+                fakeblock.filterConditions(conditions);
             };
-            var actualValue = fakeblock.filterConditions(conditions);
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
+
+            expect(func).to.throw(Error);
         });
     });
 
