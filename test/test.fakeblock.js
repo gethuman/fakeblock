@@ -202,7 +202,7 @@ describe('UNIT fakeblock/lib/fakeblock', function() {
                 fakeblock.filterConditions(conditions);
             };
 
-            expect(func).to.throw(Error);
+            expect(func).to.throw(/User does not have permission to use query criteria:.*/);
         });
     });
 
