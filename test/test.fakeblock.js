@@ -311,10 +311,10 @@ describe('UNIT fakeblock/lib/fakeblock', function() {
             should.exist(actualValue);
             actualValue.should.equal(sortField);
 
-            sortField = 'blahblahblah';
-            actualValue = fakeblock.validateSortElseUseDefault(sortField);
-            should.exist(actualValue);
-            actualValue.should.equal(testConfig.retrieve.sort['default']);
+            var func = function () {
+                fakeblock.validateSortElseUseDefault('blahblahblah');
+            };
+            expect(func).to.throw(Error);
         });
     });
 });
