@@ -4,8 +4,8 @@
   "description": "Field-level ACL library for Node.js and NoSql document stores",
   "main": "lib/fakeblock.js",
   "dependencies": {
-    "underscore": "~1.5.2",
-    "differ": "~0.1.1"
+    "differ": "~0.1.1",
+    "lodash": "~2.2.1"
   },
   "devDependencies": {
     "mocha": "~1.13.0",
