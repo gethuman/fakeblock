@@ -7,20 +7,22 @@
 var chai = require('chai');
 var should = chai.should();
 var expect = chai.expect;
-var fakeblock = require('../lib/fakeblock');
+var Fakeblock = require('../lib/fakeblock');
 
 describe('UNIT lib/fakeblock', function () {
     describe('getValue()', function () {
         it('should return null if a key does not exist', function() {
-            var config = { one: 'two' };
-            var actual = fakeblock.getValue(config, 'something.else');
+            var acl = { one: 'two' };
+            var fakeblock = new Fakeblock({ acl: acl });
+            var actual = fakeblock.getValue('something.else');
             expect(actual).not.to.exist;
         });
 
         it('should return a value if it exists', function() {
-            var config = { one: { two: ['three', 'four'] }};
+            var acl = { one: { two: ['three', 'four'] }};
+            var fakeblock = new Fakeblock({ acl: acl });
             var expected = ['three', 'four'];
-            var actual = fakeblock.getValue(config, 'one.two');
+            var actual = fakeblock.getValue('one.two');
             expect(actual).to.exist;
             actual.should.deep.equal(expected);
         });
@@ -28,26 +30,30 @@ describe('UNIT lib/fakeblock', function () {
 
     describe('canUserAccessMethod()', function () {
         it('should return false if role not there at all', function() {
-            var config = { one: { two: 'three' }};
-            var actual = fakeblock.canUserAccessMethod(config, 'user', 'find');
+            var acl = { one: { two: 'three' }};
+            var fakeblock = new Fakeblock({ acl: acl, userRole: 'user' });
+            var actual = fakeblock.canUserAccessMethod('find');
             actual.should.be.false;
         });
 
         it('should return false if the role is not in the list', function() {
-            var config = { find: { access: ['admin'] }};
-            var actual = fakeblock.canUserAccessMethod(config, 'user', 'find');
+            var acl = { find: { access: ['admin'] }};
+            var fakeblock = new Fakeblock({ acl: acl, userRole: 'user' });
+            var actual = fakeblock.canUserAccessMethod('find');
             actual.should.be.false;
         });
 
         it('should return true if the role is in the list', function() {
-            var config = { find: { access: ['user'] }};
-            var actual = fakeblock.canUserAccessMethod(config, 'user', 'find');
+            var acl = { find: { access: ['user'] }};
+            var fakeblock = new Fakeblock({ acl: acl, userRole: 'user' });
+            var actual = fakeblock.canUserAccessMethod('find');
             actual.should.be.true;
         });
     });
 
     describe('applyAcl()', function () {
         it('should throw an error if data is missing', function() {
+            var fakeblock = new Fakeblock();
             var fn = function () {
                 fakeblock.applyAcl();
             };
@@ -55,54 +61,60 @@ describe('UNIT lib/fakeblock', function () {
         });
         
         it('should return the default fields if data does not exist', function() {
-            var config = { find: { select: { 'default': { user: ['one', 'two'] }}}};
+            var acl = { find: { select: { 'default': { user: ['one', 'two'] }}}};
+            var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: 123, userRole: 'user' });
             var expected = ['one', 'two'];
-            var actual = fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', null);
+            var actual = fakeblock.applyAcl(null, 'find', 'select');
             expect(actual).to.exist;
             actual.should.deep.equal(expected);
         });
 
         it('should automatically add condition if isMine', function() {
-            var config = { find: { select: { onlyMine: { roles: ['user'], field: 'someField' }}}};
+            var acl = { find: { select: { onlyMine: { roles: ['user'], field: 'someField' }}}};
             var userId = 123;
-            var expected = { someField: 123 };
-            var actual = fakeblock.applyAcl('test', config, userId, 'user', 'find', 'select', null);
+            var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: userId, userRole: 'user' });
+            var expected = { someField: userId };
+            var actual = fakeblock.applyAcl(null, 'find', 'select');
             expect(actual).to.exist;
             actual.should.deep.equal(expected);
         });
 
         it('should throw error if block with user role restricted fields', function() {
-            var config = { find: { select: { restricted: { user: ['something'] }}}};
+            var acl = { find: { select: { restricted: { user: ['something'] }}}};
+            var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: 123, userRole: 'user' });
             var data = { something: 'one', another: 'two' };
             var fn = function() {
-                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
+                fakeblock.applyAcl(data, 'find', 'select');
             };
             expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
 
         it('should throw error if block with allroles restricted fields', function() {
-            var config = { find: { select: { restricted: { allroles: ['something'] }}}};
+            var acl = { find: { select: { restricted: { allroles: ['something'] }}}};
+            var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: 123, userRole: 'user' });
             var data = { something: 'one', another: 'two' };
             var fn = function() {
-                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
+                fakeblock.applyAcl(data, 'find', 'select');
             };
             expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
 
         it('should throw error if block with user role allowed fields', function() {
-            var config = { find: { select: { allowed: { user: ['another'] }}}};
+            var acl = { find: { select: { allowed: { user: ['another'] }}}};
+            var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: 123, userRole: 'user' });
             var data = { something: 'one', another: 'two' };
             var fn = function() {
-                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
+                fakeblock.applyAcl(data, 'find', 'select');
             };
             expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
 
         it('should throw error if block with allroles role allowed fields', function() {
-            var config = { find: { select: { allowed: { allroles: ['another'] }}}};
+            var acl = { find: { select: { allowed: { allroles: ['another'] }}}};
+            var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: 123, userRole: 'user' });
             var data = { something: 'one', another: 'two' };
             var fn = function() {
-                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
+                fakeblock.applyAcl(data, 'find', 'select');
             };
             expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
