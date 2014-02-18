@@ -1,320 +1,110 @@
 /**
- * Copyright 2013 GetHuman LLC
  * Author: Jeff Whelpley
- * Date: 8/19/13
+ * Date: 2/17/14
  *
- * Unit test
+ * Unit tests for fakeblock
  */
-var chai        = require('chai');
-var should      = chai.should();
-var expect      = chai.expect;
-var Fakeblock   = require('../lib/fakeblock');
-var testConfig = {
-    create: {
-        access:             ['admin', 'user', 'visitor'],
-        restricted: {
-            user:           ['name', 'tags', 'country']
-        },
-        allowed: {
-            visitor:        ['name', 'legacyId']
-        }
-    },
-    retrieve: {
-        access:             ['admin', 'user', 'visitor', 'device', 'partner'],
-        onlyMine:           ['device'],
-        select: {
-            restricted: {
-                user:       ['features', 'family', 'modifyDate', 'modifyUserId', 'modifyType']
-            },
-            allowed: {
-                visitor:    ['features', 'family', 'modify']
-            },
-            'default': {
-                user:       '-features -family -modifyUserId -modifyUserType',
-                visitor:    '-features -family -modifyUserId -modifyUserType',
-                device:     '-features -family -modifyUserId -modifyUserType -offerings -locations',
-                partner:    '-features -family -modifyUserId -modifyUserType'
-            }
-        },
-        where: {
-            allowed:        ['_id', 'name', 'legacyId', 'tags', 'country', 'features',
-                'slug', 'previousSlugs', 'status']
-        },
-        sort: {
-            allowed:        ['stats.rank.overall', 'createDate', 'name'],
-            'default':      'stats.rank.overall'
-        }
-    },
-    update: {
-        access:             ['admin', 'user', 'visitor'],
-        onlyMine:           ['device'],
-        restricted: {
-            user:           ['name', 'tags', 'country']
-        },
-        allowed: {
-            visitor:        ['name', 'legacyId']
-        }
-    },
-    del: {
-        access:             ['admin']
-    }
-};
+var chai = require('chai');
+var should = chai.should();
+var expect = chai.expect;
+var fakeblock = require('../lib/fakeblock');
 
-describe('UNIT fakeblock/lib/fakeblock', function() {
+describe('UNIT lib/fakeblock', function () {
+    describe('getValue()', function () {
+        it('should return null if a key does not exist', function() {
+            var config = { one: 'two' };
+            var actual = fakeblock.getValue(config, 'something.else');
+            expect(actual).not.to.exist;
+        });
 
-    describe('getValue()', function() {
-        it('should get a value from a crud config file', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var actualValue = fakeblock.getValue('retrieve.select.default.user');
-            should.exist(actualValue);
-            actualValue.should.equal(testConfig.retrieve.select['default'].user);
+        it('should return a value if it exists', function() {
+            var config = { one: { two: ['three', 'four'] }};
+            var expected = ['three', 'four'];
+            var actual = fakeblock.getValue(config, 'one.two');
+            expect(actual).to.exist;
+            actual.should.deep.equal(expected);
         });
     });
 
-    describe('filterCreateFields()', function() {
-        it('should filter create fields based on the restricted values', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var data = {
-                name: 'blah',
-                tags: ['tag1', 'tag2'],
-                legacyId: 123
-            };
-            var expectedValue = {
-                legacyId: 123
-            };
-            var actualValue = fakeblock.filterCreateFields(data, 'user');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
+    describe('canUserAccessMethod()', function () {
+        it('should return false if role not there at all', function() {
+            var config = { one: { two: 'three' }};
+            var actual = fakeblock.canUserAccessMethod(config, 'user', 'find');
+            actual.should.be.false;
         });
 
-        it('should filter create fields based on allowed values', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var data = {
-                name: 'blah',
-                tags: ['tag1', 'tag2'],
-                legacyId: 123
-            };
-            var expectedValue = {
-                name: 'blah',
-                legacyId: 123
-            };
-            var actualValue = fakeblock.filterCreateFields(data, 'visitor');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
+        it('should return false if the role is not in the list', function() {
+            var config = { find: { access: ['admin'] }};
+            var actual = fakeblock.canUserAccessMethod(config, 'user', 'find');
+            actual.should.be.false;
         });
 
-        it('should filter create fields for user with full access', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var data = {
-                name: 'blah',
-                tags: ['tag1', 'tag2'],
-                legacyId: 123,
-                anotherBlahBlahBlah: 'asdf'
-            };
-            var actualValue = fakeblock.filterCreateFields(data, 'admin');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(data);
+        it('should return true if the role is in the list', function() {
+            var config = { find: { access: ['user'] }};
+            var actual = fakeblock.canUserAccessMethod(config, 'user', 'find');
+            actual.should.be.true;
         });
     });
 
-    describe('getDefaultSelectFields()', function() {
-        it('should get default select values', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var actualValue = fakeblock.getDefaultSelectFields('user');
-            should.exist(actualValue);
-            actualValue.should.equal(testConfig.retrieve.select['default'].user);
+    describe('applyAcl()', function () {
+        it('should throw an error if data is missing', function() {
+            var fn = function () {
+                fakeblock.applyAcl();
+            };
+            expect(fn).to.throw(/Fakeblock missing required input/);
         });
-    });
-
-    describe('filterSelectFields()', function() {
-        it('should filter select fields using restricted', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var selectFields = 'name,tags,features,family,modifyDate,blah';
-            var expectedValue = 'name tags blah';
-            var actualValue = fakeblock.filterSelectFields(selectFields, 'user');
-            should.exist(actualValue);
-            actualValue.should.equal(expectedValue);
+        
+        it('should return the default fields if data does not exist', function() {
+            var config = { find: { select: { 'default': { user: ['one', 'two'] }}}};
+            var expected = ['one', 'two'];
+            var actual = fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', null);
+            expect(actual).to.exist;
+            actual.should.deep.equal(expected);
         });
 
-        it('should filter select fields using allowed', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var selectFields = 'name,tags,features,family';
-            var expectedValue = 'features family';
-            var actualValue = fakeblock.filterSelectFields(selectFields, 'visitor');
-            should.exist(actualValue);
-            actualValue.should.equal(expectedValue);
-        });
-    });
-
-    describe('removeFilteredFields()', function() {
-        it('should filter object fields using restricted', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var selectFields = {
-                name: 'blah',
-                tags: 'blah',
-                features: 'blah',
-                family: 'blah',
-                modifyDate: 'blah',
-                blah: 'blah'
-            };
-            var expectedValue = {
-                name: 'blah',
-                tags: 'blah',
-                blah: 'blah'
-            };
-
-            var actualValue = fakeblock.removeFilteredFields(selectFields, 'user');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
+        it('should automatically add condition if isMine', function() {
+            var config = { find: { select: { onlyMine: { roles: ['user'], field: 'someField' }}}};
+            var userId = 123;
+            var expected = { someField: 123 };
+            var actual = fakeblock.applyAcl('test', config, userId, 'user', 'find', 'select', null);
+            expect(actual).to.exist;
+            actual.should.deep.equal(expected);
         });
 
-        it('should filter object fields using allowed', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var selectFields = {
-                name: 'blah',
-                tags: 'blah',
-                features: 'blah',
-                family: 'blah'
+        it('should throw error if block with user role restricted fields', function() {
+            var config = { find: { select: { restricted: { user: ['something'] }}}};
+            var data = { something: 'one', another: 'two' };
+            var fn = function() {
+                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
             };
-            var expectedValue = {
-                features: 'blah',
-                family: 'blah'
-            };
-
-            var actualValue = fakeblock.removeFilteredFields(selectFields, 'visitor');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
-        });
-    });
-
-    describe('filterConditions()', function() {
-        it('should make sure all conditions are from allowed list', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var conditions = {
-                name: { '$in': ['val'] },
-                tags: 'blah',
-                anotherField: {
-                    duh: 'blasdf'
-                }
-            };
-
-            var func = function () {
-                fakeblock.filterConditions(conditions);
-            };
-
-            expect(func).to.throw(/User does not have permission to use query criteria:.*/);
-        });
-    });
-
-    describe('conditionsAreValid()', function() {
-        it('should validate that a given set of conditions are valid', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var conditions = {
-                name: { '$in': ['val'] },
-                tags: 'blah',
-                anotherField: {
-                    duh: 'blasdf'
-                }
-            };
-            var actualValue = fakeblock.conditionsAreValid(conditions);
-            should.exist(actualValue);
-            return actualValue.should.be['false'];
-        });
-    });
-
-    describe('onlyGetMyStuff()', function() {
-        it('should return true if role in list for only selecting their own stuff', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-
-            var deviceMyStuff = fakeblock.onlyGetMyStuff('device');
-            should.exist(deviceMyStuff);
-
-            var adminMyStuff = fakeblock.onlyGetMyStuff('admin');
-            should.exist(adminMyStuff);
-
-            return deviceMyStuff.should.be['true'] && adminMyStuff.should.be['false'];
-
-        });
-    });
-
-    describe('onlyUpdateMyStuff()', function() {
-        it('should return true if role in list for only updating their own stuff', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-
-            var deviceMyStuff = fakeblock.onlyUpdateMyStuff('device');
-            should.exist(deviceMyStuff);
-
-            var adminMyStuff = fakeblock.onlyUpdateMyStuff('admin');
-            should.exist(adminMyStuff);
-
-            return deviceMyStuff.should.be['true'] && adminMyStuff.should.be['false'];
-        });
-    });
-
-    describe('filterUpdateFields()', function() {
-        it('filter update fields based on the restricted values', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var data = {
-                name: 'blah',
-                tags: ['tag1', 'tag2'],
-                legacyId: 123
-            };
-            var expectedValue = {
-                legacyId: 123
-            };
-            var actualValue = fakeblock.filterUpdateFields(data, 'user');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
+            expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
 
-        it('filter update fields based on allowed values', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var data = {
-                name: 'blah',
-                tags: ['tag1', 'tag2'],
-                legacyId: 123
+        it('should throw error if block with allroles restricted fields', function() {
+            var config = { find: { select: { restricted: { allroles: ['something'] }}}};
+            var data = { something: 'one', another: 'two' };
+            var fn = function() {
+                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
             };
-            var expectedValue = {
-                name: 'blah',
-                legacyId: 123
-            };
-            var actualValue = fakeblock.filterUpdateFields(data, 'visitor');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(expectedValue);
+            expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
 
-        it('filter create fields for user with full access', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-            var data = {
-                name: 'blah',
-                tags: ['tag1', 'tag2'],
-                legacyId: 123,
-                anotherBlahBlahBlah: 'asdf'
+        it('should throw error if block with user role allowed fields', function() {
+            var config = { find: { select: { allowed: { user: ['another'] }}}};
+            var data = { something: 'one', another: 'two' };
+            var fn = function() {
+                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
             };
-            var actualValue = fakeblock.filterUpdateFields(data, 'admin');
-            should.exist(actualValue);
-            actualValue.should.deep.equal(data);
+            expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
-    });
 
-    describe('validateSortElseUseDefault()', function() {
-        it('should get default select values', function() {
-            var fakeblock = new Fakeblock('companies', testConfig);
-
-            var sortField = 'createDate';
-            var actualValue = fakeblock.validateSortElseUseDefault(sortField);
-            should.exist(actualValue);
-            actualValue.should.equal(sortField);
-
-            sortField = '-createDate';
-            actualValue = fakeblock.validateSortElseUseDefault(sortField);
-            should.exist(actualValue);
-            actualValue.should.equal(sortField);
-
-            var func = function () {
-                fakeblock.validateSortElseUseDefault('blahblahblah');
+        it('should throw error if block with allroles role allowed fields', function() {
+            var config = { find: { select: { allowed: { allroles: ['another'] }}}};
+            var data = { something: 'one', another: 'two' };
+            var fn = function() {
+                fakeblock.applyAcl('test', config, 123, 'user', 'find', 'select', data);
             };
-            expect(func).to.throw(Error);
+            expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
         });
     });
 });
