@@ -4,12 +4,10 @@
  *
  * Unit tests for Fakeblock
  */
-var chai = require('chai');
-var should = chai.should();
-var expect = chai.expect;
-var fieldFilter = require('../lib/field.filter');
+var taste = require('../taste');
+var fieldFilter = taste.target('field.filter');
 
-describe('UNIT lib/fieldFilter', function() {
+describe('UNIT field.filter', function () {
 
     describe('removeItemsFromList()', function () {
         it('should remove items from a list', function () {
@@ -88,13 +86,13 @@ describe('UNIT lib/fieldFilter', function() {
     });
 
     describe('applyFilter()', function () {
-        it('should just return back the data if no restricted or allowed fields', function() {
+        it('should just return back the data if no restricted or allowed fields', function () {
             var data = { test: 'yes' };
             var actual = fieldFilter.applyFilter(data, null, null) || {};
             actual.should.deep.equal(data);
         });
 
-        it('should call removeItemsFromList if restricted fields and an array', function() {
+        it('should call removeItemsFromList if restricted fields and an array', function () {
             var list = ['foo.man.choo', 'foo.la.loo', 'foo.man.choo.roo', 'foo.la.loo.roo', 'foo.la.zoo'];
             var itemsToRemove = ['foo.man', 'foo.la.zoo'];
             var expected = ['foo.la.loo', 'foo.la.loo.roo'];
@@ -102,7 +100,7 @@ describe('UNIT lib/fieldFilter', function() {
             actual.should.deep.equal(expected);
         });
 
-        it('should call removeFieldsFromObj if restricted + is obj', function() {
+        it('should call removeFieldsFromObj if restricted + is obj', function () {
             it('should remove fields from data', function () {
                 var testData = {
                     foo: {
@@ -128,7 +126,7 @@ describe('UNIT lib/fieldFilter', function() {
             });
         });
 
-        it('should call getItemsFromList if allowed and array', function() {
+        it('should call getItemsFromList if allowed and array', function () {
             var list = ['foo.man.choo', 'foo.la.loo', 'foo.man.choo.roo', 'foo.la.loo.roo', 'foo.la.zoo'];
             var itemsToGet = ['foo.man', 'foo.la.zoo'];
             var expected = ['foo.man.choo', 'foo.man.choo.roo', 'foo.la.zoo'];
@@ -136,7 +134,7 @@ describe('UNIT lib/fieldFilter', function() {
             actual.should.deep.equal(expected);
         });
 
-        it('should call getFieldsFromObj if allowed + is obj', function() {
+        it('should call getFieldsFromObj if allowed + is obj', function () {
             var testData = {
                 foo: {
                     man: {
