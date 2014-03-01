@@ -79,7 +79,6 @@ describe('UNIT tests for fakeblock', function () {
 
         it('should throw error if onlyMine and no userId', function () {
             var acl = { find: { select: { onlyMine: { roles: ['user'], field: 'someField' }}}};
-            var userId = 123;
             var fakeblock = new Fakeblock({ acl: acl, name: 'test', userRole: 'user' });
             var fn = function () {
                 fakeblock.applyAcl(null, 'find', 'select');
@@ -94,7 +93,7 @@ describe('UNIT tests for fakeblock', function () {
             var fn = function () {
                 fakeblock.applyAcl(data, 'find', 'select');
             };
-            taste.expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
+            taste.expect(fn).to.throw(/Fakeblock blocked some data/);
         });
 
         it('should throw error if block with allroles restricted fields', function () {
@@ -104,7 +103,7 @@ describe('UNIT tests for fakeblock', function () {
             var fn = function () {
                 fakeblock.applyAcl(data, 'find', 'select');
             };
-            taste.expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
+            taste.expect(fn).to.throw(/Fakeblock blocked some data/);
         });
 
         it('should throw error if block with user role allowed fields', function () {
@@ -114,7 +113,7 @@ describe('UNIT tests for fakeblock', function () {
             var fn = function () {
                 fakeblock.applyAcl(data, 'find', 'select');
             };
-            taste.expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
+            taste.expect(fn).to.throw(/Fakeblock blocked some data/);
         });
 
         it('should throw error if block with allroles role allowed fields', function () {
@@ -124,7 +123,7 @@ describe('UNIT tests for fakeblock', function () {
             var fn = function () {
                 fakeblock.applyAcl(data, 'find', 'select');
             };
-            taste.expect(fn).to.throw(/Fakeblock blocked.*{\"something\":\"one\"}/);
+            taste.expect(fn).to.throw(/Fakeblock blocked some data/);
         });
     });
 
@@ -177,26 +176,6 @@ describe('UNIT tests for fakeblock', function () {
                 fakeblock.checkValues(data, 'create');
             };
             taste.expect(fn).to.not.throw(Error);
-        });
-    });
-
-    describe('protect()', function () {
-        it('should throw error if user does not have access', function () {
-            var acl = { one: { two: 'three' }};
-            var fakeblock = new Fakeblock({ acl: acl, userRole: 'user' });
-            var fn = function () {
-                fakeblock.protect({ method: 'find' });
-            };
-            taste.expect(fn).to.throw(/User does not have access to/);
-        });
-
-        it('should run successfully if user has access', function () {
-            var data = { one: 'one', two: 'two' };
-            var acl = { blah: { access: ['user'], fields: { restricted: { user: ['three'] }}}};
-            var fakeblock = new Fakeblock({ acl: acl, userRole: 'user' });
-            var expected = { one: 'one', two: 'two' };
-            fakeblock.protect({ method: 'blah', data: data });
-            data.should.deep.equal(expected);
         });
     });
 });
