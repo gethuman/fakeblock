@@ -1,6 +1,6 @@
 {
   "name": "fakeblock",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Field-level ACL library for Node.js and NoSql document stores",
   "main": "lib/fakeblock.js",
   "author": "Jeff Whelpley <jeff@gethuman.com>",
