@@ -3,20 +3,27 @@
   "version": "0.0.4",
   "description": "Field-level ACL library for Node.js and NoSql document stores",
   "main": "lib/fakeblock.js",
-  "author": "Jeff Whelpley <jeff@gethuman.com>",
-  "contributors": [
-    {
-      "name": "Jeff Whelpley",
-      "email": "jeff@gethuman.com"
-    }
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gethuman/fakeblock.js.git"
+  },
   "keywords": [
-    "ACL",
-    "Security"
+    "javascript"
   ],
+  "author": "Jeff Whelpley",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gethuman/fakeblock.js/issues"
+  },
+  "homepage": "https://github.com/gethuman/fakeblock.js",
   "dependencies": {
+    "absurd": "^0.3.24",
+    "dot": "~1.0.2",
+    "eventemitter2": "^0.4.13",
+    "gulp": "^3.6.0",
+    "jeff-core": "^0.1.12",
     "lodash": "~2.4.1",
-    "gulp": "^3.6.0"
+    "q": "^1.0.1"
   },
   "devDependencies": {
     "gulp": "^3.7.0",
@@ -30,15 +37,5 @@
     "gulp-mocha": "^0.4.1",
     "gulp-watch": "^0.6.5",
     "gulp-jshint": "^1.6.1"
-  },
-  "scripts": {
-    "test": "grunt test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/gethuman/fakeblock.js.git"
-  },
-  "bugs": {
-    "url": "https://github.com/gethuman/fakeblock.js/issues"
   }
 }
