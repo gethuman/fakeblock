@@ -4,7 +4,7 @@
  *
  * Unit tests for Fakeblock
  */
-var taste = require('../taste');
+var taste = require('taste');
 var fieldFilter = taste.target('field.filter');
 
 describe('UNIT field.filter', function () {

@@ -4,7 +4,7 @@
  *
  * Unit tests for fakeblock
  */
-var taste = require('../taste');
+var taste = require('taste');
 var Fakeblock = taste.target('fakeblock');
 
 describe('UNIT tests for fakeblock', function () {
@@ -57,7 +57,7 @@ describe('UNIT tests for fakeblock', function () {
             };
             taste.expect(fn).to.throw(/Fakeblock missing required input/);
         });
-        
+
         it('should return the default fields if data does not exist', function () {
             var acl = { find: { select: { 'default': { user: ['one', 'two'] }}}};
             var fakeblock = new Fakeblock({ acl: acl, name: 'test', userId: 123, userRole: 'user' });
