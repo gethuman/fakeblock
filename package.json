@@ -24,6 +24,6 @@
   },
   "devDependencies": {
     "gulp": "^3.8.10",
-    "taste": "^0.1.12"
+    "taste": "^0.1.29"
   }
 }
