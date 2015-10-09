@@ -23,8 +23,8 @@
     "lodash": "~3.10.1"
   },
   "devDependencies": {
-    "batter": "0.1.17",
+    "batter": "0.1.18",
     "gulp": "^3.9.0",
-    "taste": "^0.2.13"
+    "taste": "^0.2.14"
   }
 }
