@@ -1,6 +1,6 @@
 {
   "name": "fakeblock",
-  "version": "0.0.61",
+  "version": "0.0.62",
   "description": "Field-level ACL library for Node.js and NoSql document stores",
   "main": "lib/fakeblock.js",
   "repository": {
