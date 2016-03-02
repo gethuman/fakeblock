@@ -20,11 +20,11 @@
   },
   "homepage": "https://github.com/gethuman/fakeblock.js",
   "dependencies": {
-    "lodash": "4.5.0"
+    "lodash": "4.6.0"
   },
   "devDependencies": {
-    "batter": "0.1.29",
+    "batter": "0.1.31",
     "gulp": "3.9.1",
-    "taste": "0.2.23"
+    "taste": "0.2.24"
   }
 }
